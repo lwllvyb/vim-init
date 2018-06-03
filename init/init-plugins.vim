@@ -9,8 +9,8 @@
 
 if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
-	" let g:bundle_group += ['tags', 'airline', 'nerdtree', 'ale', 'echodoc']
 	let g:bundle_group += ['tags', 'airline', 'nerdtree', 'ale', 'echodoc']
+	let g:bundle_group += ['quickfix']
 endif
 
 
@@ -30,6 +30,7 @@ endfunc
 "----------------------------------------------------------------------
 call plug#begin(get(g:, 'bundle_home', '~/.vim/bundles'))
 
+let mapleader='space'
 
 "----------------------------------------------------------------------
 " 默认插件 
@@ -39,6 +40,9 @@ Plug 'justinmk/vim-dirvish'
 Plug 'tpope/vim-unimpaired'
 Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 Plug 'skywind3000/asyncrun.vim'
+" Plug 'hecal3/vim-leader-guide'
+Plug 'zhenyangze/vim-leader-guide'
+Plug 'scrooloose/nerdcommenter'
 
 
 "----------------------------------------------------------------------
@@ -143,6 +147,7 @@ if index(g:bundle_group, 'basic') >= 0
 	Plug 'junegunn/fzf'
 	Plug 'Raimondi/delimitMate'
 	Plug 'skywind3000/vim-preview'
+	Plug 'Yggdroot/LeaderF'
 
 	" 使用 ALT+E 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
@@ -152,6 +157,12 @@ if index(g:bundle_group, 'basic') >= 0
 	let g:startify_session_dir = '~/.vim/session'
 endif
 
+"----------------------------------------------------------------------
+" 与quickfix 相关的配置
+"----------------------------------------------------------------------
+if index(g:bundle_group, 'quickfix') >= 0
+	Plug 'romainl/vim-qf'
+endif
 
 "----------------------------------------------------------------------
 " 自动生成 ctags/gtags，并提供自动索引功能
@@ -192,6 +203,18 @@ if index(g:bundle_group, 'tags') >= 0
 
 	" 禁止 gutentags 自动链接 gtags 数据库
 	let g:gutentags_auto_add_gtags_cscope = 0
+
+	noremap <space>pt :PreviewTag <C-R><C-W><cr>
+	noremap <space>pc :PreviewClose <cr>
+	noremap <silent> <space>cs :GscopeFind s <C-R><C-W><cr>
+	noremap <silent> <space>cg :GscopeFind g <C-R><C-W><cr>
+	noremap <silent> <space>cc :GscopeFind c <C-R><C-W><cr>
+	noremap <silent> <space>ct :GscopeFind t <C-R><C-W><cr>
+	noremap <silent> <space>ce :GscopeFind e <C-R><C-W><cr>
+	noremap <silent> <space>cf :GscopeFind f <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <space>ci :GscopeFind i <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <space>cd :GscopeFind d <C-R><C-W><cr>
+	noremap <silent> <space>ca :GscopeFind a <C-R><C-W><cr>
 endif
 
 
@@ -250,13 +273,14 @@ endif
 if index(g:bundle_group, 'nerdtree') >= 0
 	Plug 'scrooloose/nerdtree', {'on': ['NERDTree', 'NERDTreeFocus', 'NERDTreeToggle', 'NERDTreeCWD', 'NERDTreeFind'] }
 	Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+	Plug 'airblade/vim-rooter'
 	let g:NERDTreeMinimalUI = 1
 	let g:NERDTreeDirArrows = 1
 	let g:NERDTreeHijackNetrw = 0
-	noremap <space>nn :NERDTree<cr>
-	noremap <space>no :NERDTreeFocus<cr>
-	noremap <space>nm :NERDTreeMirror<cr>
-	noremap <space>nt :NERDTreeToggle<cr>
+""	noremap <space>nn :NERDTree<cr>
+""	noremap <space>no :NERDTreeFocus<cr>
+""	noremap <space>nm :NERDTreeMirror<cr>
+""	noremap <space>nt :NERDTreeToggle<cr>
 endif
 
 
@@ -380,4 +404,95 @@ let g:ycm_semantic_triggers =  {
 			\ 'cs,lua,javascript': ['re!\w{2}'],
 			\ }
 
+
+autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+
+
+fun! QuickfixToggle()
+    let nr = winnr("$")
+    copen
+    let nr2 = winnr("$")
+    if nr == nr2
+        cclose
+    endif
+endfunction 
+
+let g:lmap =  {
+			\'n' : ['NERDTreeToggle', 'toggle nerdtree'],
+			\}
+let g:lmap.c = {
+			\'name' : 'ctags',
+			\' ' : ['call feedkeys("\<Plug>NERDCommenterToggle")','Toggle'],
+			\}
+let g:lmap.p = {'name' : 'preview'}
+
+" Second level dictionaries:
+let g:lmap.f = { 
+			\'name' : 'File Menu',
+			\'f' : ['LeaderfFile', 'find file'],
+			\'m' : ['LeaderfMru', 'find in recent files'],
+			\}
+let g:lmap.f.c = {
+			\'name' : 'vimrc operations',
+			\'o' : ['e $MYVIMRC' , 'Open vimrc'],
+			\'s' : ['so %', 'Source file'],
+			\}
+let g:lmap.e = { 
+			\'name' : 'error config',
+			\'o' : ['call QuickfixToggle()', 'Open quickfix toggle'],
+			\}
+let g:lmap.b = {
+			\'name' : 'buffer operations',
+			\'d' : ['bd', 'close current buffer'],
+			\'p' : ['bprevious', 'goto previous buffer'],
+			\'n' : ['bnext', 'goto next buffer'],
+			\}
+let g:lmap.l = {
+			\'name' : 'leader operations',
+			\'o' : ['LeaderGuideToggle', 'toggle leader guide'],
+			\}
+let g:lmap.w = {
+			\'name' : 'windows operations',
+			\'h' : ['call feedkeys("<C-W>h")', 'goto left  window'],
+			\'j' : ['call feedkeys("<C-W>j")', 'goto down  window'],
+			\'k' : ['call feedkeys("<C-W>k")', 'goto up    window'],
+			\'l' : ['call feedkeys("<C-W>l")', 'goto right window'],
+			\}
+
+let g:lmap.t = {
+			\'name' : 'tag operations',
+			\'c' : ['LeaderfFunction!', 'search tag current buffer'],
+			\}
+
+" 设置触发 leaderguilde 快捷键
+call leaderGuide#register_prefix_descriptions("<Space>", "g:lmap")
+nnoremap <silent> <Space> :<c-u>LeaderGuide '<Space>'<CR>
+vnoremap <silent> <Space> :<c-u>LeaderGuideVisual '<Space>'<CR>
+
+" 设置 leaderguide 默认不开启
+let g:leaderGuide_toggle_show = 0
+" 过滤前缀、后缀信息
+function! s:my_displayfunc()
+	let g:leaderGuide#displayname =
+	\ substitute(g:leaderGuide#displayname, '\c<cr>$', '', '')
+	let g:leaderGuide#displayname =
+	\ substitute(g:leaderGuide#displayname, '^<Plug>', '', '')
+endfunction
+let g:leaderGuide_displayfunc = [function("s:my_displayfunc")]
+
+" vim-rooter
+let g:rooter_patterns = ['.git/', '.root/']
+let g:rooter_resolve_links = 1
+let g:rooter_silent_chdir = 1
+
+" leaderf
+let g:Lf_UseVersionControlTool = 0
+let g:Lf_WildIgnore = {
+            \ 'dir': ['.vscode*', '.git*'],
+            \ 'file': []
+            \}
+
+" nerdcommenter
+let g:NERDCreateDefaultMappings = 0
 
