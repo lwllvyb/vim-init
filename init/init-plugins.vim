@@ -43,6 +43,7 @@ Plug 'skywind3000/asyncrun.vim'
 " Plug 'hecal3/vim-leader-guide'
 Plug 'zhenyangze/vim-leader-guide'
 Plug 'scrooloose/nerdcommenter'
+Plug 'dracula/vim', { 'as': 'dracula' }
 
 
 "----------------------------------------------------------------------
